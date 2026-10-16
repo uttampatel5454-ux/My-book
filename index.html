@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Book</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 412px;
+            height: 100vh;
+            max-height: 870px;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            padding: 16px 18px 12px 18px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .title-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .title-row h2 {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1e1b4b;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .dots-btn {
+            background: #f1f5f9;
+            border: none;
+            color: #4f46e5;
+            font-size: 16px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .dots-btn:hover { background: #e0e7ff; }
+
+        .shop-address-sub {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 3px;
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icons i {
+            font-size: 18px;
+            color: #6366f1;
+            cursor: pointer;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px 120px 16px;
+        }
+
+        /* Dashboard Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 12px 14px;
+            position: relative;
+            border: 1px solid #eef2f6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 72px;
+            cursor: pointer;
+        }
+
+        .card.full-width { grid-column: span 2; }
+
+        .card-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .card.to-collect { background-color: #f0fdf4; border-color: #dcfce7; }
+        .card.to-collect .amount { color: #1e1b4b; font-size: 18px; font-weight: 700; }
+        .card.to-collect .label { color: #16a34a; font-size: 13px; font-weight: 600; }
+
+        .card.standard { background-color: #f8fafc; border-color: #e2e8f0; }
+        .card.standard .title { font-size: 14px; font-weight: 700; color: #1e293b; }
+        .card.standard .subtitle { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            margin-top: 10px;
+        }
+
+        .transactions-title { font-size: 14px; font-weight: 600; color: #64748b; }
+
+        .filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #4f46e5;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* Transactions List */
+        .transactions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .transaction-card-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .edit-bill-btn {
+            background: #e0e7ff;
+            color: #4f46e5;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 0;
+        }
+
+        .empty-text { color: #64748b; font-size: 14px; font-weight: 500; }
+
+        /* Floating Actions */
+        .floating-actions {
+            position: absolute;
+            bottom: 65px;
+            left: 0;
+            right: 0;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .btn-payment {
+            background-color: #2a2d43;
+            color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .btn-add {
+            background-color: #22c55e;
+            color: #ffffff;
+            border: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .btn-invoice {
+            background-color: #4f46e5;
+            color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: #ffffff;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            width: 20%;
+        }
+
+        .nav-item i { font-size: 18px; }
+        .nav-item.active { color: #4f46e5; font-weight: 600; }
+
+        /* Modal Styles */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.3s ease;
+        }
+
+        .modal.open {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 100%;
+            max-height: 90%;
+            border-radius: 20px 20px 0 0;
+            padding: 18px;
+            overflow-y: auto;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        .modal-header h3 { font-size: 16px; color: #1e293b; }
+        .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; }
+
+        /* BILL FORM & CART EDITING STYLES */
+        .bill-top-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 14px;
+        }
+
+        .bill-top-info .inv-title { font-size: 14px; font-weight: 700; color: #4f46e5; }
+        .bill-top-info .inv-date { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #475569;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .party-select-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #334155;
+            margin-bottom: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .add-items-trigger-btn {
+            background: #eef2ff;
+            color: #4f46e5;
+            border: 1px dashed #a5b4fc;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        .added-bill-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .added-item-card {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .item-card-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 13px;
+            color: #1e293b;
+        }
+
+        .item-card-inputs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .item-card-inputs input {
+            padding: 6px 8px;
+            border: 1px solid #94a3b8;
+            border-radius: 6px;
+            font-size: 12px;
+            background: #fff;
+        }
+
+        .item-card-inputs .rate-input { width: 80px; }
+        .item-card-inputs .qty-input { width: 60px; }
+
+        .delete-item-btn {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* INVOICE TEMPLATE PREVIEW */
+        .pdf-invoice-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 14px;
+            color: #1e293b;
+        }
+
+        .pdf-invoice-header {
+            border-bottom: 2px solid #4f46e5;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .pdf-shop-title { font-size: 18px; font-weight: 800; color: #1e1b4b; }
+        .pdf-shop-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+        }
+
+        .pdf-table th {
+            background: #f1f5f9;
+            font-size: 11px;
+            padding: 6px;
+            text-align: left;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .pdf-table td {
+            font-size: 12px;
+            padding: 6px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .pdf-total-row {
+            background: #f0fdf4;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #16a34a;
+            font-size: 15px;
+        }
+
+        .whatsapp-send-btn {
+            background: #25d366;
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            text-decoration: none;
+        }
+
+        .balance-box {
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .balance-box.green { background: #f0fdf4; border: 1px solid #dcfce7; }
+        .balance-box.red { background: #fef2f2; border: 1px solid #fee2e2; }
+        .balance-box.purple { background: #f5f3ff; border: 1px solid #ddd6fe; }
+
+        .balance-box .title-sub { font-size: 12px; font-weight: 600; }
+        .balance-box .val-amount { font-size: 18px; font-weight: 800; }
+
+        .total-summary-card {
+            background: #f0fdf4;
+            border: 1px solid #dcfce7;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-summary-card div span { font-size: 12px; color: #16a34a; font-weight: 600; }
+        .total-summary-card div h2 { font-size: 20px; color: #15803d; font-weight: 800; }
+
+        .btn-create-party {
+            background: #4f46e5;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .party-bill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        .party-info h4 { font-size: 14px; color: #1e293b; font-weight: 700; }
+        .party-info p { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+        .party-amount { text-align: right; }
+        .party-amount h4 { font-size: 15px; color: #16a34a; font-weight: 700; }
+
+        .stock-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 14px;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-row { display: flex; gap: 8px; }
+
+        .filter-select, .low-stock-btn, .btn-add-cat, .btn-add-item {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .low-stock-btn {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fca5a5;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .low-stock-btn.active { background: #dc2626; color: #fff; border-color: #dc2626; }
+
+        .btn-add-cat {
+            background: #4f46e5;
+            color: #ffffff;
+            border-color: #4f46e5;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: bold;
+        }
+
+        .btn-add-item {
+            background: #059669;
+            color: #ffffff;
+            border-color: #059669;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: bold;
+            margin-top: 6px;
+            padding: 10px;
+        }
+
+        .stock-card-custom {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stock-card-custom .item-title { font-size: 15px; font-weight: 700; color: #1e293b; }
+        .stock-card-custom .item-qty-row { font-size: 13px; color: #0284c7; font-weight: 600; }
+        .stock-card-custom .item-mrp-row { font-size: 13px; color: #16a34a; font-weight: 700; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 600; }
+        input[type="text"], input[type="number"], select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            background: #f8fafc; 
+            outline: none; 
+        }
+        .btn-primary { background: #4f46e5; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
+    </style>
+
+<style>
+#authScreen{position:fixed;inset:0;z-index:9999;background:#f4f5f9;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-box{width:100%;max-width:360px;background:#fff;border-radius:16px;padding:24px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.auth-box h1{font-size:24px;color:#1e1b4b;text-align:center}
+.auth-box p.sub{font-size:12px;color:#64748b;text-align:center;margin:4px 0 16px}
+.auth-box input{width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;margin-bottom:10px}
+.auth-box button{width:100%;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:#4f46e5;color:#fff}
+.auth-box .link{background:none;color:#4f46e5;margin-top:8px;font-weight:600}
+#authMsg{font-size:12px;color:#dc2626;text-align:center;margin-bottom:8px;min-height:14px}
+</style>
+</head>
+<body>
+<div id="authScreen">
+  <div class="auth-box">
+    <h1>📒 My Book</h1>
+    <p class="sub">Apni dukaan ka hisab, kahin se bhi</p>
+    <input id="authShop" type="text" placeholder="Dukaan ka naam" style="display:none">
+    <input id="authEmail" type="email" placeholder="Email">
+    <input id="authPass" type="password" placeholder="Password (kam se kam 6 akshar)">
+    <div id="authMsg"></div>
+    <button id="authBtn" onclick="doAuth()">Login</button>
+    <button class="link" onclick="toggleAuthMode()" id="authToggle">Naya account banayein</button>
+  </div>
+</div>
+
+
+<div class="app-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="title-container">
+            <div class="title-row">
+                <h2 id="headerShopName">My Book</h2>
+                <button class="dots-btn" onclick="openAddressModal()" title="Change Address">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+            </div>
+            <div class="shop-address-sub" id="displayShopAddress">📍 Main Road, Shop No. 1</div>
+        </div>
+        <div class="header-icons">
+            <i class="fa-solid fa-right-from-bracket" title="Logout" onclick="doLogout()"></i>
+            <i class="fa-solid fa-calculator" onclick="alert('Calculator')"></i>
+            <i class="fa-solid fa-gift" onclick="alert('Offers & Rewards')"></i>
+            <i class="fa-solid fa-tv" onclick="alert('Desktop Sync')"></i>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="content">
+        <div class="cards-grid">
+            <div class="card to-collect full-width" onclick="openToCollectModal()">
+                <div class="amount" id="dashToCollect">₹ 0</div>
+                <div class="label">To Collect <i class="fa-solid fa-arrow-down" style="font-size:11px;"></i></div>
+                <i class="fa-solid fa-chevron-right card-arrow"></i>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card standard" onclick="openStockModal()">
+                <div class="title">Stock Value 🔍</div>
+                <div class="subtitle" id="stockValueSub">₹ 0 (Total Items)</div>
+                <i class="fa-solid fa-chevron-right card-arrow"></i>
+            </div>
+
+            <div class="card standard" onclick="openTotalBalanceModal()">
+                <div class="title">Total Balance 🔍</div>
+                <div class="subtitle">Collect & Pay Balance</div>
+                <i class="fa-solid fa-chevron-right card-arrow"></i>
+            </div>
+        </div>
+
+        <div class="transactions-header">
+            <span class="transactions-title">Transactions (Recent Bills)</span>
+            <div class="filter-btn">
+                <i class="fa-regular fa-calendar-days"></i>
+                LAST 365 DAYS
+            </div>
+        </div>
+
+        <!-- TRANSACTIONS SHOWING ON HOMEPAGE -->
+        <div class="transactions-container" id="homepageTransactionsList"></div>
+    </div>
+
+    <!-- Floating Actions -->
+    <div class="floating-actions">
+        <button class="btn-payment" onclick="alert('Received Payment Clicked')">
+            Received Payment
+        </button>
+        <button class="btn-add" onclick="openAddItemModal()">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+        <button class="btn-invoice" onclick="openCreateBillModal()">
+            + Bill / Invoice
+        </button>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <a class="nav-item active">
+            <i class="fa-solid fa-house"></i>
+            Dashboard
+        </a>
+        <a class="nav-item" onclick="openToCollectModal()">
+            <i class="fa-solid fa-users"></i>
+            Parties
+        </a>
+        <a class="nav-item" onclick="openStockModal()">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            Items
+        </a>
+        <a class="nav-item">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+            For You
+        </a>
+        <a class="nav-item">
+            <i class="fa-solid fa-ellipsis"></i>
+            More
+        </a>
+    </div>
+
+    <!-- CREATE / EDIT BILL MODAL -->
+    <div class="modal" id="createBillModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="billModalTitle">Create Bill / Invoice</h3>
+                <button class="close-btn" onclick="closeModal('createBillModal')">✕</button>
+            </div>
+
+            <div class="bill-top-info">
+                <div>
+                    <div class="inv-title" id="displayInvoiceNo">Sales Invoice U.P-1</div>
+                    <div class="inv-date">16 Oct 2026 - 7 day(s) to due</div>
+                </div>
+            </div>
+
+            <div class="section-label">PARTY NAME *</div>
+            <div class="party-select-box" onclick="openToCollectModal()">
+                <span id="selectedPartyNameSpan"><i class="fa-solid fa-user"></i> Search / Create Party</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+
+            <div class="section-label">ITEMS & RATES</div>
+            <div class="add-items-trigger-btn" onclick="openStockModal()">
+                + Add Items From Stock
+            </div>
+
+            <div class="added-bill-items-list" id="billAddedItemsContainer"></div>
+
+            <button class="btn-primary" onclick="saveNewBillRecord()">Save Bill & Preview</button>
+        </div>
+    </div>
+
+    <!-- GENERATED BILL PREVIEW & WHATSAPP SEND MODAL -->
+    <div class="modal" id="pdfPreviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📄 Generated Bill Invoice</h3>
+                <button class="close-btn" onclick="closeModal('pdfPreviewModal')">✕</button>
+            </div>
+
+            <!-- PREVIEW AREA -->
+            <div id="pdfPrintableContent" class="pdf-invoice-box">
+                <div class="pdf-invoice-header">
+                    <div>
+                        <div class="pdf-shop-title" id="pdfShopName">My Book</div>
+                        <div class="pdf-shop-sub" id="pdfShopAddress">📍 Main Road, Shop No. 1</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="background:#e0e0ff; color:#4f46e5; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">TAX INVOICE</span>
+                        <div style="font-size:11px; margin-top:4px;" id="pdfInvoiceNo">INV: U.P-1</div>
+                        <div style="font-size:10px; color:#64748b;" id="pdfInvoiceDate">Date: 16 Oct 2026</div>
+                    </div>
+                </div>
+
+                <div style="font-size:12px; margin-bottom:10px;">
+                    <strong>Bill To:</strong>
+                    <div id="pdfCustomerName" style="color:#4f46e5; font-weight:bold;">Customer Name</div>
+                    <div id="pdfCustomerPhone" style="color:#64748b;">Mobile: N/A</div>
+                </div>
+
+                <table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Item Name</th>
+                            <th>Qty</th>
+                            <th style="text-align:right;">Rate</th>
+                            <th style="text-align:right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdfTableBody"></tbody>
+                </table>
+
+                <div class="pdf-total-row">
+                    <span>Grand Total:</span>
+                    <span id="pdfGrandTotal">₹ 0</span>
+                </div>
+            </div>
+
+            <!-- 100% WORKING WHATSAPP TEXT MESSAGE LINK -->
+            <a id="whatsappDirectLink" class="whatsapp-send-btn" href="#" onclick="return openWhatsApp(event)">
+                <i class="fa-brands fa-whatsapp" style="font-size:18px;"></i> Send Bill Details on WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <!-- TOTAL BALANCE MODAL -->
+    <div class="modal" id="totalBalanceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📊 Total Balance Details</h3>
+                <button class="close-btn" onclick="closeModal('totalBalanceModal')">✕</button>
+            </div>
+
+            <div class="balance-box green">
+                <div>
+                    <div class="title-sub" style="color:#16a34a;">Total Pending (To Collect ⬇)</div>
+                    <div class="val-amount" style="color:#15803d;" id="modalToCollectBalance">₹ 0</div>
+                </div>
+                <i class="fa-solid fa-arrow-down-long" style="color:#16a34a; font-size:20px;"></i>
+            </div>
+
+            <div class="balance-box red">
+                <div>
+                    <div class="title-sub" style="color:#dc2626;">Total Pay Amount (To Pay ⬆)</div>
+                    <div class="val-amount" style="color:#b91c1c;" id="modalToPayBalance">₹ 0</div>
+                </div>
+                <i class="fa-solid fa-arrow-up-long" style="color:#dc2626; font-size:20px;"></i>
+            </div>
+
+            <div class="balance-box purple">
+                <div>
+                    <div class="title-sub" style="color:#6d28d9;">Net Combined Balance</div>
+                    <div class="val-amount" style="color:#5b21b6;" id="modalNetBalance">₹ 0</div>
+                </div>
+                <i class="fa-solid fa-wallet" style="color:#6d28d9; font-size:20px;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- TO COLLECT MODAL -->
+    <div class="modal" id="toCollectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👥 Customer Ledger List</h3>
+                <button class="close-btn" onclick="closeModal('toCollectModal')">✕</button>
+            </div>
+
+            <div class="total-summary-card">
+                <div>
+                    <span>Total Outstanding Bill:</span>
+                    <h2 id="modalTotalCollectAmount">₹ 0</h2>
+                </div>
+                <button class="btn-create-party" onclick="openCreatePartyModal()">
+                    <i class="fa-solid fa-user-plus"></i> Create Party
+                </button>
+            </div>
+
+            <div style="font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px;">Select Customer for Bill:</div>
+            <div id="partyCollectList"></div>
+        </div>
+    </div>
+
+    <!-- CREATE NEW PARTY MODAL -->
+    <div class="modal" id="createPartyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👤 Create New Party / Customer</h3>
+                <button class="close-btn" onclick="closeModal('createPartyModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>Party / Customer Name</label>
+                <input type="text" id="partyName" placeholder="Grahak ka naam">
+            </div>
+            <div class="form-group">
+                <label>Mobile Number (WhatsApp)</label>
+                <input type="number" id="partyPhone" placeholder="10 Digit mobile number">
+            </div>
+            <div class="form-group">
+                <label>Opening Bill Balance Amount (₹)</label>
+                <input type="number" id="partyOpeningBill" placeholder="0" value="0">
+            </div>
+            <button class="btn-primary" onclick="saveNewParty()">Save Party</button>
+        </div>
+    </div>
+
+    <!-- STOCK VALUE MODAL -->
+    <div class="modal" id="stockModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📦 Available Stock Items List</h3>
+                <button class="close-btn" onclick="closeModal('stockModal')">✕</button>
+            </div>
+
+            <div class="stock-filters">
+                <div class="filter-row">
+                    <button class="low-stock-btn" id="lowStockBtn" onclick="toggleLowStockFilter()">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Low Stock Only
+                    </button>
+                    <button class="btn-add-cat" onclick="openAddCategoryModal()">
+                        <i class="fa-solid fa-plus"></i> Add Category
+                    </button>
+                </div>
+
+                <div class="filter-row">
+                    <select class="filter-select" id="categorySelect" onchange="renderStockList()">
+                        <option value="ALL">Select Category (All)</option>
+                    </select>
+
+                    <select class="filter-select" id="filterBySelect" onchange="renderStockList()">
+                        <option value="DEFAULT">Filter By (Default)</option>
+                        <option value="QTY_LOW">Qty: Low to High</option>
+                        <option value="QTY_HIGH">Qty: High to Low</option>
+                        <option value="PRICE_HIGH">Price: High to Low</option>
+                    </select>
+                </div>
+
+                <button class="btn-add-item" onclick="openAddItemModal()">
+                    <i class="fa-solid fa-plus"></i> Naya Stock Item Add Karein
+                </button>
+            </div>
+
+            <div id="stockItemList"></div>
+        </div>
+    </div>
+
+    <!-- ADD CATEGORY MODAL -->
+    <div class="modal" id="addCategoryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ Nayi Category Banayein</h3>
+                <button class="close-btn" onclick="closeModal('addCategoryModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>Category Ka Naam Likhein</label>
+                <input type="text" id="newCategoryName" placeholder="Jaise: Engine Oil, Brake Parts">
+            </div>
+            <button class="btn-primary" onclick="createNewCategory()">Save Category</button>
+        </div>
+    </div>
+
+    <!-- ADD ITEM MODAL -->
+    <div class="modal" id="addItemModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📦 Naya Item Stock Me Add Karein</h3>
+                <button class="close-btn" onclick="closeModal('addItemModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>Item Name</label>
+                <input type="text" id="newItemName" placeholder="Jaise: Engine Oil 20W40">
+            </div>
+            <div class="form-group">
+                <label>Category Chunein</label>
+                <select id="newItemCategorySelect">
+                    <option value="Uncategorized">-- Select Category --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantity (Pcs)</label>
+                <input type="number" id="newItemQty" placeholder="Kitna stock hai">
+            </div>
+            <div class="form-group">
+                <label>MRP / Price (₹)</label>
+                <input type="number" id="newItemPrice" placeholder="Per unit rate">
+            </div>
+            <button class="btn-primary" onclick="saveNewStockItem()">Save Item</button>
+        </div>
+    </div>
+
+    <!-- ADDRESS CHANGE MODAL -->
+    <div class="modal" id="addressModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📍 Dukan Ka Address Badlein</h3>
+                <button class="close-btn" onclick="closeModal('addressModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>Naya Address Darj Karein</label>
+                <textarea id="inputShopAddress" rows="3" placeholder="Shop ka naya address yahan likhein..."></textarea>
+            </div>
+            <button class="btn-primary" onclick="saveShopAddress()">Save Address</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let shopName = 'My Book';
+    let shopAddress = 'Main Road, Shop No. 1';
+    let userCategories = [];
+    let toPayAmount = 0;
+    let partiesList = [];
+    let stockItems = [];
+
+    let isLowStockOnly = false;
+    let selectedActiveParty = null;
+    let currentCartItems = [];
+    let editingBillNo = null;
+    let lastGeneratedBillData = null;
+
+    document.getElementById('displayShopAddress').innerText = '📍 ' + shopAddress;
+    updateDashboard();
+
+    function openAddressModal() {
+        document.getElementById('inputShopAddress').value = shopAddress;
+        document.getElementById('addressModal').classList.add('open');
+    }
+
+    function getNextInvoiceNumber() {
+        let maxNum = 0;
+        partiesList.forEach(p => {
+            if (p.bills) {
+                p.bills.forEach(b => {
+                    if (b.billNo && b.billNo.startsWith('U.P-')) {
+                        let numStr = b.billNo.replace('U.P-', '');
+                        let num = parseInt(numStr, 10);
+                        if (!isNaN(num) && num > maxNum) {
+                            maxNum = num;
+                        }
+                    }
+                });
+            }
+        });
+        return maxNum + 1;
+    }
+
+    function openCreateBillModal() {
+        editingBillNo = null;
+        selectedActiveParty = null;
+        currentCartItems = [];
+        document.getElementById('billModalTitle').innerText = "Create Bill / Invoice";
+        document.getElementById('selectedPartyNameSpan').innerHTML = '<i class="fa-solid fa-user"></i> Search / Create Party';
+        
+        let nextNo = getNextInvoiceNumber();
+        document.getElementById('displayInvoiceNo').innerText = `Sales Invoice U.P-${nextNo}`;
+        
+        renderCurrentCart();
+        document.getElementById('createBillModal').classList.add('open');
+    }
+
+    function openEditBillModal(partyName, billNo) {
+        let party = partiesList.find(p => p.name === partyName);
+        if (!party) return;
+
+        let bill = party.bills.find(b => b.billNo === billNo);
+        if (!bill) return;
+
+        editingBillNo = billNo;
+        selectedActiveParty = party;
+        currentCartItems = JSON.parse(JSON.stringify(bill.cartItems));
+
+        document.getElementById('billModalTitle').innerText = "Edit Bill " + billNo;
+        document.getElementById('displayInvoiceNo').innerText = `Sales Invoice ${billNo}`;
+        document.getElementById('selectedPartyNameSpan').innerText = party.name + ' (' + party.phone + ')';
+
+        renderCurrentCart();
+        document.getElementById('createBillModal').classList.add('open');
+    }
+
+    function openToCollectModal() {
+        renderPartyCollectList();
+        document.getElementById('toCollectModal').classList.add('open');
+    }
+
+    function selectPartyForBill(partyId) {
+        selectedActiveParty = partiesList.find(p => p.id === partyId);
+        if (selectedActiveParty) {
+            document.getElementById('selectedPartyNameSpan').innerText = selectedActiveParty.name + ' (' + selectedActiveParty.phone + ')';
+            closeModal('toCollectModal');
+            document.getElementById('createBillModal').classList.add('open');
+        }
+    }
+
+    function openTotalBalanceModal() {
+        let totalCollect = 0;
+        partiesList.forEach(p => {
+            if (p.bills) p.bills.forEach(b => totalCollect += b.amount);
+        });
+
+        document.getElementById('modalToCollectBalance').innerText = '₹ ' + totalCollect;
+        document.getElementById('modalToPayBalance').innerText = '₹ ' + toPayAmount;
+        document.getElementById('modalNetBalance').innerText = '₹ ' + (totalCollect - toPayAmount);
+
+        document.getElementById('totalBalanceModal').classList.add('open');
+    }
+
+    function openCreatePartyModal() {
+        document.getElementById('partyName').value = '';
+        document.getElementById('partyPhone').value = '';
+        document.getElementById('partyOpeningBill').value = '0';
+        document.getElementById('createPartyModal').classList.add('open');
+    }
+
+    function openStockModal() {
+        updateCategoryDropdowns();
+        renderStockList();
+        document.getElementById('stockModal').classList.add('open');
+    }
+
+    function openAddCategoryModal() {
+        document.getElementById('newCategoryName').value = '';
+        document.getElementById('addCategoryModal').classList.add('open');
+    }
+
+    function openAddItemModal() {
+        updateCategoryDropdowns();
+        document.getElementById('newItemName').value = '';
+        document.getElementById('newItemQty').value = '';
+        document.getElementById('newItemPrice').value = '';
+        document.getElementById('addItemModal').classList.add('open');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('open');
+    }
+
+    function saveShopAddress() {
+        const newAddress = document.getElementById('inputShopAddress').value.trim();
+        if(!newAddress) {
+            alert('Kripya address darj karein!');
+            return;
+        }
+        shopAddress = newAddress;
+        cloudSave();
+        document.getElementById('displayShopAddress').innerText = '📍 ' + shopAddress;
+        closeModal('addressModal');
+        alert('Address update ho gaya!');
+    }
+
+    function saveNewParty() {
+        const name = document.getElementById('partyName').value.trim();
+        const phone = document.getElementById('partyPhone').value.trim();
+        const pendingBill = parseFloat(document.getElementById('partyOpeningBill').value) || 0;
+
+        if (!name || !phone || phone.length < 10) {
+            alert('Kripya sahi naam aur 10-digit mobile number daalein!');
+            return;
+        }
+
+        let initialBills = [];
+        if (pendingBill > 0) {
+            let nextNo = getNextInvoiceNumber();
+            initialBills.push({
+                billNo: `U.P-${nextNo}`,
+                date: new Date().toLocaleDateString('en-GB'),
+                amount: pendingBill,
+                cartItems: [{ name: "Opening Balance / Old Dues", qty: 1, price: pendingBill, total: pendingBill }]
+            });
+        }
+
+        const newPartyObj = { id: Date.now(), name, phone, bills: initialBills };
+        partiesList.push(newPartyObj);
+        cloudSave();
+
+        closeModal('createPartyModal');
+        updateDashboard();
+        selectPartyForBill(newPartyObj.id);
+    }
+
+    function renderPartyCollectList() {
+        const container = document.getElementById('partyCollectList');
+        let totalCollect = 0;
+        container.innerHTML = '';
+
+        if (partiesList.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Koi party record nahi hai</div>';
+            document.getElementById('modalTotalCollectAmount').innerText = '₹ 0';
+            return;
+        }
+
+        partiesList.forEach(party => {
+            let partyTotalBill = 0;
+            if (party.bills) {
+                party.bills.forEach(b => partyTotalBill += b.amount);
+            }
+            totalCollect += partyTotalBill;
+
+            container.innerHTML += `
+                <div class="party-bill-item" onclick="selectPartyForBill(${party.id})">
+                    <div class="party-info">
+                        <h4>👤 ${party.name}</h4>
+                        <p>📱 ${party.phone}</p>
+                    </div>
+                    <div class="party-amount">
+                        <h4>₹ ${partyTotalBill}</h4>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('modalTotalCollectAmount').innerText = '₹ ' + totalCollect;
+        document.getElementById('dashToCollect').innerText = '₹ ' + totalCollect;
+    }
+
+    function addStockItemToBill(index) {
+        const item = stockItems[index];
+        if (!item) return;
+
+        currentCartItems.push({
+            name: item.name,
+            qty: 1,
+            price: item.price,
+            total: item.price
+        });
+
+        closeModal('stockModal');
+        document.getElementById('createBillModal').classList.add('open');
+        renderCurrentCart();
+    }
+
+    function renderCurrentCart() {
+        const container = document.getElementById('billAddedItemsContainer');
+        container.innerHTML = '';
+
+        if (currentCartItems.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:12px; padding:10px;">Koi item add nahi kiya gaya hai</div>';
+            return;
+        }
+
+        currentCartItems.forEach((ci, idx) => {
+            container.innerHTML += `
+                <div class="added-item-card">
+                    <div class="item-card-header">
+                        <span>${idx + 1}. ${ci.name}</span>
+                        <span style="color:#16a34a;">Total: ₹${ci.total}</span>
+                    </div>
+                    <div class="item-card-inputs">
+                        <label style="font-size:11px;">Rate (₹):</label>
+                        <input type="number" class="rate-input" value="${ci.price}" onchange="updateCartItemRate(${idx}, this.value)">
+                        
+                        <label style="font-size:11px;">Qty:</label>
+                        <input type="number" class="qty-input" value="${ci.qty}" onchange="updateCartItemQty(${idx}, this.value)">
+                        
+                        <button class="delete-item-btn" onclick="removeCartItem(${idx})">✕ Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function updateCartItemRate(index, newRate) {
+        let rate = parseFloat(newRate) || 0;
+        currentCartItems[index].price = rate;
+        currentCartItems[index].total = rate * currentCartItems[index].qty;
+        renderCurrentCart();
+    }
+
+    function updateCartItemQty(index, newQty) {
+        let qty = parseInt(newQty) || 1;
+        currentCartItems[index].qty = qty;
+        currentCartItems[index].total = currentCartItems[index].price * qty;
+        renderCurrentCart();
+    }
+
+    function removeCartItem(index) {
+        currentCartItems.splice(index, 1);
+        renderCurrentCart();
+    }
+
+    function saveNewBillRecord() {
+        if (!selectedActiveParty) {
+            alert('Kripya sabse pehle Party Name chunein!');
+            return;
+        }
+        if (currentCartItems.length === 0) {
+            alert('Kripya kam se kam ek item add karein!');
+            return;
+        }
+
+        let grandTotal = 0;
+        currentCartItems.forEach(i => grandTotal += i.total);
+
+        let billNumber = editingBillNo;
+        if (!billNumber) {
+            let nextNo = getNextInvoiceNumber();
+            billNumber = `U.P-${nextNo}`;
+        }
+
+        const newBillEntry = {
+            billNo: billNumber,
+            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            amount: grandTotal,
+            cartItems: [...currentCartItems]
+        };
+
+        if (editingBillNo) {
+            let billIdx = selectedActiveParty.bills.findIndex(b => b.billNo === editingBillNo);
+            if (billIdx !== -1) {
+                selectedActiveParty.bills[billIdx] = newBillEntry;
+            }
+        } else {
+            selectedActiveParty.bills.push(newBillEntry);
+        }
+
+        cloudSave();
+
+        lastGeneratedBillData = {
+            party: selectedActiveParty,
+            bill: newBillEntry
+        };
+
+        closeModal('createBillModal');
+        updateDashboard();
+
+        showPdfPreviewModal(selectedActiveParty, newBillEntry);
+    }
+
+    function showPdfPreviewModal(party, bill) {
+        document.getElementById('pdfShopAddress').innerText = '📍 ' + shopAddress;
+        document.getElementById('pdfInvoiceNo').innerText = 'INV: ' + bill.billNo;
+        document.getElementById('pdfInvoiceDate').innerText = 'Date: ' + bill.date;
+        document.getElementById('pdfCustomerName').innerText = party.name;
+        document.getElementById('pdfCustomerPhone').innerText = 'Mobile: ' + party.phone;
+
+        const tableBody = document.getElementById('pdfTableBody');
+        tableBody.innerHTML = '';
+
+        bill.cartItems.forEach((ci, index) => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><strong>${ci.name}</strong></td>
+                    <td>${ci.qty}</td>
+                    <td style="text-align:right;">₹${ci.price}</td>
+                    <td style="text-align:right; font-weight:bold;">₹${ci.total}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('pdfGrandTotal').innerText = '₹ ' + bill.amount;
+
+        // WHATSAPP TEXT LINK SETUP
+        let phone = String(party.phone).replace(/\D/g, '');
+        phone = phone.replace(/^0+/, '');          // 0 / 00 hata do
+        if (phone.length === 11 && phone.startsWith('0')) phone = phone.slice(1);
+        if (phone.length === 10) {
+            phone = '91' + phone;                  // India code
+        }
+
+        let itemsText = "";
+        bill.cartItems.forEach((item, idx) => {
+            itemsText += `\n${idx + 1}. ${item.name} (${item.qty} Pcs) - ₹${item.total}`;
+        });
+
+        const rawMessage = `🧾 *${shopName} INVOICE*\n\nBill No: *${bill.billNo}*\nDate: ${bill.date}\nCustomer: *${party.name}*\n\n*Items Purchased:*${itemsText}\n\n*Grand Total:* ₹${bill.amount}\n\n_Thank you for your visit!_`;
+        
+        const encodedMessage = encodeURIComponent(rawMessage);
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`;
+        document.getElementById('whatsappDirectLink').setAttribute('href', whatsappUrl);
+
+        document.getElementById('pdfPreviewModal').classList.add('open');
+    }
+
+    function openWhatsApp(e) {
+        const url = document.getElementById('whatsappDirectLink').getAttribute('href');
+        if (!url || url === '#') {
+            alert('Pehle bill generate karein!');
+            return false;
+        }
+        e.preventDefault();
+        // Same tab me kholo - WebView / mobile me sabse reliable
+        window.location.href = url;
+        return false;
+    }
+
+    function createNewCategory() {
+        const catName = document.getElementById('newCategoryName').value.trim();
+        if (!catName) {
+            alert('Kripya Category ka naam bharein!');
+            return;
+        }
+
+        if (userCategories.includes(catName)) {
+            alert('Yeh Category pehle se maujood hai!');
+            return;
+        }
+
+        userCategories.push(catName);
+        cloudSave();
+        
+        updateCategoryDropdowns();
+        closeModal('addCategoryModal');
+        alert('Category add ho gayi!');
+    }
+
+    function updateCategoryDropdowns() {
+        const filterSelect = document.getElementById('categorySelect');
+        const itemCatSelect = document.getElementById('newItemCategorySelect');
+
+        filterSelect.innerHTML = '<option value="ALL">Select Category (All)</option>';
+        itemCatSelect.innerHTML = '<option value="Uncategorized">Uncategorized</option>';
+
+        userCategories.forEach(cat => {
+            filterSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            itemCatSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+        });
+    }
+
+    function saveNewStockItem() {
+        const name = document.getElementById('newItemName').value.trim();
+        const category = document.getElementById('newItemCategorySelect').value;
+        const qty = parseInt(document.getElementById('newItemQty').value);
+        const price = parseFloat(document.getElementById('newItemPrice').value);
+
+        if (!name || isNaN(qty) || isNaN(price)) {
+            alert('Kripya sabhi details sahi se bharein!');
+            return;
+        }
+
+        stockItems.push({ name, category, qty, price });
+        cloudSave();
+
+        closeModal('addItemModal');
+        updateDashboard();
+        renderStockList();
+        alert('Item Stock me save ho gaya!');
+    }
+
+    function toggleLowStockFilter() {
+        isLowStockOnly = !isLowStockOnly;
+        const btn = document.getElementById('lowStockBtn');
+        if (isLowStockOnly) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+        renderStockList();
+    }
+
+    function updateDashboard() {
+        let totalVal = 0;
+        stockItems.forEach(i => totalVal += (i.qty * i.price));
+        document.getElementById('stockValueSub').innerText = '₹ ' + totalVal + ' Total Value';
+
+        let totalCollect = 0;
+        let allTransactions = [];
+
+        partiesList.forEach(p => {
+            if (p.bills) {
+                p.bills.forEach(b => {
+                    totalCollect += b.amount;
+                    allTransactions.push({ partyName: p.name, ...b });
+                });
+            }
+        });
+
+        document.getElementById('dashToCollect').innerText = '₹ ' + totalCollect;
+
+        const transContainer = document.getElementById('homepageTransactionsList');
+        transContainer.innerHTML = '';
+
+        if (allTransactions.length === 0) {
+            transContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-text">No Transactions Found</div>
+                </div>
+            `;
+        } else {
+            allTransactions.reverse().forEach(tx => {
+                transContainer.innerHTML += `
+                    <div class="transaction-card-item">
+                        <div>
+                            <strong style="font-size:14px; color:#1e293b;">👤 ${tx.partyName}</strong><br>
+                            <small style="color:#64748b;">🧾 ${tx.billNo} | 📅 ${tx.date}</small><br>
+                            <button class="edit-bill-btn" onclick="openEditBillModal('${tx.partyName}', '${tx.billNo}')">✏️ Edit Bill</button>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="font-size:15px; font-weight:800; color:#16a34a;">₹ ${tx.amount}</span><br>
+                            <small style="color:#0284c7;">Paid / Due</small>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    function renderStockList() {
+        const category = document.getElementById('categorySelect').value;
+        const filterBy = document.getElementById('filterBySelect').value;
+        const container = document.getElementById('stockItemList');
+
+        let filtered = [...stockItems];
+
+        if (isLowStockOnly) {
+            filtered = filtered.filter(item => item.qty <= 5);
+        }
+
+        if (category !== 'ALL') {
+            filtered = filtered.filter(item => item.category === category);
+        }
+
+        if (filterBy === 'QTY_LOW') {
+            filtered.sort((a, b) => a.qty - b.qty);
+        } else if (filterBy === 'QTY_HIGH') {
+            filtered.sort((a, b) => b.qty - a.qty);
+        } else if (filterBy === 'PRICE_HIGH') {
+            filtered.sort((a, b) => b.price - a.price);
+        }
+
+        container.innerHTML = '';
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Koi stock item nahi mila</div>';
+            return;
+        }
+
+        filtered.forEach((item, sIndex) => {
+            const isLow = item.qty <= 5;
+            container.innerHTML += `
+                <div class="stock-card-custom" onclick="addStockItemToBill(${sIndex})" style="cursor:pointer;" title="Click to add in bill">
+                    <div class="item-title">📦 ${item.name}</div>
+                    <div class="item-qty-row">
+                        <span>Quantity (Stock):</span> 
+                        <span style="color:${isLow ? '#dc2626' : '#0284c7'}; font-weight:bold;">
+                            ${item.qty} Pcs ${isLow ? '(⚠️ Low Stock)' : ''}
+                        </span>
+                    </div>
+                    <div class="item-mrp-row">
+                        <span>MRP / Rate:</span> ₹ ${item.price} <span style="float:right; font-size:11px; color:#4f46e5;">+ Tap to Add</span>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    // ===== SUPABASE LOGIN + CLOUD SAVE =====
+    const SUPABASE_URL = 'https://ofkwgiljjitocpcgbtty.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_U_Lf89jhnfkaTnW-6cUcqw_phgWIxTD';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentUser = null, cloudLoaded = false, saveTimer = null, isSignup = false;
+
+    function toggleAuthMode() {
+        isSignup = !isSignup;
+        document.getElementById('authShop').style.display = isSignup ? 'block' : 'none';
+        document.getElementById('authBtn').innerText = isSignup ? 'Account banayein' : 'Login';
+        document.getElementById('authToggle').innerText = isSignup ? 'Pehle se account hai? Login' : 'Naya account banayein';
+        document.getElementById('authMsg').innerText = '';
+    }
+
+    async function doAuth() {
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authPass').value;
+        const msg = document.getElementById('authMsg');
+        msg.style.color = '#dc2626';
+        if (!email || password.length < 6) { msg.innerText = 'Email aur 6+ akshar ka password bharein'; return; }
+        msg.innerText = 'Ruko...';
+        let res;
+        if (isSignup) {
+            const name = document.getElementById('authShop').value.trim();
+            if (!name) { msg.innerText = 'Dukaan ka naam bharein'; return; }
+            res = await sb.auth.signUp({ email, password, options: { data: { shop_name: name } } });
+            if (!res.error && !res.data.session) {
+                msg.style.color = '#16a34a';
+                msg.innerText = 'Email par confirmation link bheja gaya hai. Confirm karke login karein.';
+                return;
+            }
+        } else {
+            res = await sb.auth.signInWithPassword({ email, password });
+        }
+        if (res.error) { msg.innerText = res.error.message; return; }
+        msg.innerText = '';
+        await startSession(res.data.session.user);
+    }
+
+    async function startSession(user) {
+        currentUser = user;
+        const { data } = await sb.from('user_data').select('data').eq('user_id', user.id).maybeSingle();
+        const d = (data && data.data) || {};
+        shopName = d.shopName || (user.user_metadata && user.user_metadata.shop_name) || 'My Book';
+        shopAddress = d.shopAddress || 'Main Road, Shop No. 1';
+        userCategories = d.categories || [];
+        toPayAmount = d.toPay || 0;
+        partiesList = d.parties || [];
+        stockItems = d.stock || [];
+        cloudLoaded = true;
+        document.getElementById('headerShopName').innerText = shopName;
+        document.getElementById('pdfShopName').innerText = shopName;
+        document.getElementById('displayShopAddress').innerText = '📍 ' + shopAddress;
+        updateCategoryDropdowns();
+        renderStockList();
+        updateDashboard();
+        document.getElementById('authScreen').style.display = 'none';
+    }
+
+    function cloudSave() {
+        if (!cloudLoaded || !currentUser) return;
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(async () => {
+            const payload = { shopName, shopAddress, categories: userCategories, toPay: toPayAmount, parties: partiesList, stock: stockItems };
+            const { error } = await sb.from('user_data').upsert({ user_id: currentUser.id, data: payload, updated_at: new Date().toISOString() });
+            if (error) alert('Save nahi hua: ' + error.message);
+        }, 400);
+    }
+
+    async function doLogout() {
+        await sb.auth.signOut();
+        location.reload();
+    }
+
+    (async () => {
+        const { data } = await sb.auth.getSession();
+        if (data.session) startSession(data.session.user);
+    })();
+</script>
+
+</body>
+</html>
